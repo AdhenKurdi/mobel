@@ -1,0 +1,40 @@
+name: task_mobel
+description: A new Flutter project.
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.4 <4.0.0'
+
+dependencies: 
+  cupertino_icons: ^1.0.2
+  get: 4.6.6
+  equatable: ^2.0.3
+  google_fonts: ^6.1.0
+  intl: ^0.17.0
+  sqflite: ^2.0.0+3
+  image_picker: ^0.8.5+3
+  image: ^3.2.0
+  google_maps_flutter: ^2.2.1
+  get_it: ^7.6.4
+  flutter: 
+    sdk: flutter
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  supabase_flutter: ^1.6.2
+  path: ^1.8.3
+  cached_network_image: ^3.3.0
+  lottie: ^2.7.0
+  shared_preferences: ^2.2.0
+  connectivity_plus: ^5.0.1
+
+dev_dependencies: 
+  flutter_lints: ^2.0.0
+  flutter_test: 
+    sdk: flutter
+
+flutter: 
+  uses-material-design: true
+  assets:
+    - assets/
