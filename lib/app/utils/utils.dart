@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:task_mobel/app/modules/adds/controllers/adds_controller.dart';
+import 'package:path/path.dart' as p;
 
 void showCustomSnackbar(String tittle, String message, Color color,bool isConnection) {
   Get.snackbar(
@@ -93,4 +94,14 @@ void showCustomBottomSheet(BuildContext context, AddsController controller) {
       );
     },
   );
+}
+
+
+
+String fileUploadName(String filePath) {
+  String extension = filePath.split('.').last;
+  String basename = p.basenameWithoutExtension(filePath);
+  String newFileName =
+      '$basename-${DateTime.now().millisecondsSinceEpoch}.$extension';
+  return newFileName;
 }

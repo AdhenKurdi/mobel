@@ -29,4 +29,29 @@ class LocalDataSourceTaskImpl extends LocalDataSourceTask {
       throw DatabaseException(e.toString());
     }
   }
+
+  @override
+  Future<void> deleteTaskCache() {
+    return taskDatabaseHelper.deleteAllTasksCache();
+  }
+
+  @override
+  Future<String> insertTaskCache(TaskModel task) async {
+    try {
+      await taskDatabaseHelper.insertTaskCache(task);
+      return "Add data successfully";
+    } catch (e) {
+      throw e;
+    }
+  }
+  
+  @override
+  Future<List<TaskModel>> getAllTaskCache()async {
+    try {
+      final result = await taskDatabaseHelper.getTasksCache();
+      return result.map((e) => TaskModel.fromMap(e)).toList();
+    } catch (e) {
+      throw DatabaseException(e.toString());
+    }
+  }
 }

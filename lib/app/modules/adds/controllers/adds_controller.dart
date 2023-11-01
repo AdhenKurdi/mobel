@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:path/path.dart' as p;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:task_mobel/app/modules/adds/views/adds_view.dart';
 import 'package:task_mobel/app/utils/utils.dart';
 
 import 'package:flutter/material.dart';
@@ -18,7 +15,6 @@ import 'package:task_mobel/app/domain/entity/task.dart';
 import 'package:task_mobel/app/domain/usecase/task_usecase.dart';
 import 'package:task_mobel/app/modules/home/controllers/home_controller.dart';
 import 'package:task_mobel/app/routes/app_pages.dart';
-import 'package:task_mobel/di.dart';
 
 class AddsController extends GetxController {
   final formKey = GlobalKey<FormState>();
@@ -83,17 +79,6 @@ class AddsController extends GetxController {
     super.onClose();
   }
 
-  void insertTaskDelayed(Task task) {
-    delayedActions.add(() => insertTask(task));
-  }
-
-  void checkAndExecuteDelayedActions() {
-    if (delayedActions.isNotEmpty) {
-      final delayedAction = delayedActions.removeAt(0);
-      delayedAction();
-    }
-  }
-
   void updateConnectionStatus(ConnectivityResult connectivityResult) {
     if (connectivityResult == ConnectivityResult.none) {
       showCustomSnackbar("Warning ", "No Connection", Colors.yellow, true);
@@ -102,65 +87,38 @@ class AddsController extends GetxController {
     } else {
       if (Get.isSnackbarOpen) {
         Get.closeCurrentSnackbar();
-        
       }
       isConnected = true;
-      handleLocationPermission(Get.context!);
-      getCurrentPosition(Get.context!);
-      print(" $isConnected heha");
-      checkAndExecuteDelayedActions();
+      print(" $isConnected heho");
+      // checkAndExecuteDelayedActions();
     }
-  }
-
-  // Future<void> addStringListToSharedPreferences(List<String> stringList) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.setStringList('myStringListKey', stringList);
-  // }
-
-  // Future<List<String>> getStringListFromSharedPreferences() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   return prefs.getStringList('myStringListKey') ?? [];
-  // }
-
-  String fileUploadName(String filePath) {
-    String extension = filePath.split('.').last;
-    String basename = p.basenameWithoutExtension(filePath);
-    String newFileName =
-        '$basename-${DateTime.now().millisecondsSinceEpoch}.$extension';
-    return newFileName;
-  }
-
-  Future<String> uploadImageToSupabase() async {
-    final supabase = await Supabase.instance.client;
-    final file = File(pathImage.value);
-    final fileName = fileUploadName(pathImage.value);
-    final storageResponse =
-        supabase.storage.from('gambar').upload(fileName, file);
-
-    final a = await storageResponse;
-
-    final String publicUrl =
-        supabase.storage.from('gambar').getPublicUrl(fileName);
-
-    return publicUrl;
   }
 
   FutureOr<void> insertTask(Task task) async {
     print(" $isConnected hehes");
     if (isConnected) {
       isLoading(true);
-      final imageUrl = await uploadImageToSupabase();
+      final imageUrl =
+          await taskUseCase.insertImageRemoteExecute(pathImage.value);
       task.photo = imageUrl;
       final result = await taskUseCase.insertTaskRemoteExecute(task);
       _message = result;
       isLoading(false);
-      
+
       Get.offAllNamed(Routes.HOME);
       Get.put(HomeController());
       showCustomSnackbar("Success", _message, Colors.green, false);
     } else {
+      // insertTaskDelayed()
       isLoading(true);
-      insertTaskDelayed(task);
+      final result = await taskUseCase.insertTaskCacheExecute(task);
+      _message = result;
+      isLoading(false);
+
+      Get.offAllNamed(Routes.HOME);
+      
+      // Get.back();
+      showCustomSnackbar("Success", _message, Colors.green, false);
     }
   }
 
@@ -181,56 +139,49 @@ class AddsController extends GetxController {
   }
 
   Future<bool> handleLocationPermission(BuildContext context) async {
-    if (isConnected) {
-      bool serviceEnabled;
-      LocationPermission permission;
+    bool serviceEnabled;
+    LocationPermission permission;
 
-      serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Location services are disabled. Please enable the services')));
-        return false;
-      }
-      permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Location permissions are denied')));
-          return false;
-        }
-      }
-      if (permission == LocationPermission.deniedForever) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Location permissions are permanently denied, we cannot request permissions.')));
-        return false;
-      }
-      return true;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location services are disabled. Please enable the services')));
+      return false;
     }
-
-    return false;
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied')));
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location permissions are permanently denied, we cannot request permissions.')));
+      return false;
+    }
+    return true;
   }
 
   Future<void> getCurrentPosition(BuildContext context) async {
-    if (isConnected) {
-      final hasPermission = await handleLocationPermission(context);
+    final hasPermission = await handleLocationPermission(context);
 
-      if (!hasPermission) return;
-      await Geolocator.getCurrentPosition(
-              desiredAccuracy: LocationAccuracy.high)
-          .then((Position position) {
-        print(position);
-        latitude(position.latitude.toString());
-        longitude(position.longitude.toString());
-        _currentPosition(position);
+    if (!hasPermission) return;
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((Position position) {
+      print(position);
+      latitude(position.latitude.toString());
+      longitude(position.longitude.toString());
+      _currentPosition(position);
 
-        getAddressFromLatLng(_currentPosition.value!);
-      }).catchError((e) {
-        debugPrint(e);
-      });
-    }
+      getAddressFromLatLng(_currentPosition.value!);
+    }).catchError((e) {
+      debugPrint(e);
+    });
   }
 
   Future<void> getAddressFromLatLng(Position position) async {
@@ -244,4 +195,25 @@ class AddsController extends GetxController {
       debugPrint(e);
     });
   }
+
+  // void insertTaskDelayed(Task task) {
+  //   delayedActions.add(() => insertTask(task));
+  // }
+
+  // void checkAndExecuteDelayedActions() {
+  //   if (delayedActions.isNotEmpty) {
+  //     final delayedAction = delayedActions.removeAt(0);
+  //     delayedAction();
+  //   }
+  // }
+
+  // Future<void> addStringListToSharedPreferences(List<String> stringList) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setStringList('myStringListKey', stringList);
+  // }
+
+  // Future<List<String>> getStringListFromSharedPreferences() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   return prefs.getStringList('myStringListKey') ?? [];
+  // }
 }

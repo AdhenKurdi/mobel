@@ -6,4 +6,9 @@ abstract class TaskRepository {
 
   Future<List<Map<String, dynamic>>> getAllTaskRemote();
   Future<String> insertTaskRemote(Task task);
+  Future<String> insertImageRemote(String pathImage);
+
+  Future<String> insertTaskCache(Task task);
+  Future<void> deleteTaskCache();
+  Future<List<Task>> getAllTaskCache();
 }

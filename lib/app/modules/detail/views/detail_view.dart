@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -35,28 +37,50 @@ class DetailView extends GetView<DetailController> {
                           child: Row(
                             children: [
                               Expanded(
-                                child: CachedNetworkImage(
-                                  imageUrl: controller.taskObject == null
-                                      ? controller.taskMap!['photo']
-                                      : controller.taskObject!.photo,
-                                  placeholder: (context, url) =>
-                                      CircularProgressIndicator(),
-                                  errorWidget: (context, url, error) =>
-                                      Icon(Icons.error),
-                                  imageBuilder: (context, imageProvider) {
-                                    return Container(
-                                      width: 200,
-                                      height: 300,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(15)),
-                                        image: DecorationImage(
-                                            image: imageProvider,
-                                            fit: BoxFit.cover),
+                                child: controller.taskObject == null ? 
+                                 CachedNetworkImage(
+                                        imageUrl: controller.taskMap!['photo'],
+                                        placeholder: (context, url) =>
+                                            CircularProgressIndicator(),
+                                        errorWidget: (context, url, error) =>
+                                            Icon(Icons.error),
+                                        imageBuilder: (context, imageProvider) {
+                                          return Container(
+                                            width: 200,
+                                            height: 300,
+                                            decoration: BoxDecoration(
+                                              borderRadius: const BorderRadius.all(
+                                                  Radius.circular(15)),
+                                              image: DecorationImage(
+                                                  image: imageProvider,
+                                                  fit: BoxFit.cover),
+                                            ),
+                                          );
+                                        },
+                                      ) : controller.taskObject!.photo.contains("") ? CachedNetworkImage(
+                                        imageUrl: controller.taskObject!.photo,
+                                        placeholder: (context, url) =>
+                                            CircularProgressIndicator(),
+                                        errorWidget: (context, url, error) =>
+                                            Icon(Icons.error),
+                                        imageBuilder: (context, imageProvider) {
+                                          return Container(
+                                            width: 200,
+                                            height: 300,
+                                            decoration: BoxDecoration(
+                                              borderRadius: const BorderRadius.all(
+                                                  Radius.circular(15)),
+                                              image: DecorationImage(
+                                                  image: imageProvider,
+                                                  fit: BoxFit.cover),
+                                            ),
+                                          );
+                                        },
+                                      ) : Image.file(File(controller.taskObject!.photo),
+                                        width: 200,
+                                        height: 300,
+                                        fit: BoxFit.cover,
                                       ),
-                                    );
-                                  },
-                                ),
                               ),
                               Expanded(
                                   child: Container(

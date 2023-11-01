@@ -6,4 +6,6 @@ abstract class RemoteDataSourceTask {
   Future<String> insertTask(TaskModel entity);
 
   Future<List<Map<String, dynamic>>> getAllTask();
+
+  Future<String> insertImage(String pathImage);
 }

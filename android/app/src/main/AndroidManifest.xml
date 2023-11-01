@@ -7,6 +7,7 @@
         android:label="task_mobel"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyBbZIx9O02lp5xsEULrrZG2SceK3jHs9lk"/> 
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -45,17 +45,28 @@ class TaskDatabaseHelper {
     ''');
     await db.execute('''
       CREATE TABLE  $_tblCache (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        description TEXT,
-        quantity INTEGER,
-        latitude TEXT,
-        longitude TEXT,
-        date TEXT,
-        photo TEXT,
-        address TEXT
+        "id" INTEGER ,
+        "name" TEXT,
+        "description" TEXT,
+        "quantity" INTEGER,
+        "latitude" TEXT,
+        "longitude" TEXT,
+        "date" TEXT,
+        "photo" TEXT,
+        "address" TEXT,
+        PRIMARY KEY ("id" AUTOINCREMENT)
       );
     ''');
+  }
+
+  FutureOr<int> insertTaskCache(TaskModel task) async {
+    final db = await database;
+    return await db!.insert(_tblCache, task.toJson(), conflictAlgorithm:ConflictAlgorithm.replace);
+  }
+
+  Future<void> deleteAllTasksCache() async {
+    final db = await database;
+    await db!.delete(_tblCache);
   }
 
   FutureOr<int> insertTask(TaskModel task) async {
@@ -82,7 +93,16 @@ class TaskDatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> results =
         await db!.query(_tblTask, distinct: true);
+    return results;
+  }
+
+  FutureOr<List<Map<String, dynamic>>> getTasksCache() async {
+    final db = await database;
+    final List<Map<String, dynamic>> results =
+        await db!.query(_tblCache, distinct: true);
     print("hos $results");
     return results;
   }
+
+
 }

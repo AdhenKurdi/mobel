@@ -40,4 +40,25 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<String> insertTaskRemote(Task task) {
     return remoteDataSourceTask.insertTask(TaskModel.fromEntity(task));
   }
+
+  @override
+  Future<void> deleteTaskCache() {
+    return localDataSourceTask.deleteTaskCache();
+  }
+
+  @override
+  Future<String> insertTaskCache(Task task) {
+    return localDataSourceTask.insertTaskCache(TaskModel.fromEntity(task));
+  }
+
+  @override
+  Future<List<Task>> getAllTaskCache() async {
+    final result = await localDataSourceTask.getAllTaskCache();
+    return result.map((e) => e.toEntity()).toList();
+  }
+
+  @override
+  Future<String> insertImageRemote(String pathImage) {
+    return remoteDataSourceTask.insertImage(pathImage);
+  }
 }

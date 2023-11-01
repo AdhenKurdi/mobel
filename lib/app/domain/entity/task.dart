@@ -23,6 +23,17 @@ class Task extends Equatable {
       required this.quantity,
       required this.address});
 
+  factory Task.fromMap(Map<String, dynamic> map) => Task(
+      id: map['id'],
+      name: map['name'],
+      description: map['description'],
+      quantity: map['quantity'],
+      latitude: map['latitude'],
+      longitude: map['longitude'],
+      photo: map['photo'],
+      date: map['date'],
+      address: map['address']);    
+
   @override
   List<Object?> get props =>
       [id, name, description, quantity, latitude, longitude, photo, date,address];

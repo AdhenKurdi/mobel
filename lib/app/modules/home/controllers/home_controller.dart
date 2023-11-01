@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:task_mobel/app/domain/entity/task.dart';
 import 'package:task_mobel/app/domain/usecase/task_usecase.dart';
+import 'package:task_mobel/app/routes/app_pages.dart';
 import 'package:task_mobel/app/utils/utils.dart';
 
 class HomeController extends GetxController {
@@ -20,12 +21,15 @@ class HomeController extends GetxController {
   final TaskUseCase taskUseCase = GetIt.I.get<TaskUseCase>();
 
   Rx<bool> isConnected = true.obs;
+  bool autoPostExecuted = false;
 
   FutureOr<void> getAllTask() async {
-    final result = await taskUseCase.getAllTaskExecute();
+    final resultTask = await taskUseCase.getAllTaskExecute();
+    final resultCache = await taskUseCase.getAllTaskCacheExecute();
+    final result = [...resultTask, ...resultCache];
     listTask(result);
+    print(result);
     listTask.refresh();
-    print("hehe ${result.toSet().toList()}");
   }
 
   FutureOr<void> insertTask(Task task) async {
@@ -36,22 +40,58 @@ class HomeController extends GetxController {
   void updateConnectionStatus(ConnectivityResult connectivityResult) {
     if (connectivityResult == ConnectivityResult.none) {
       showCustomSnackbar("Warning ", "No Connection", Colors.yellow, true);
+      isConnected(false);
       getAllTask();
-      print("true");
     } else {
-      getAllTaskRemote();
-      print("false");
       isConnected(true);
+      autoPost();
+      getAllTaskRemote();
+
       if (Get.isSnackbarOpen) {
         Get.closeCurrentSnackbar();
       }
     }
   }
 
+  _loadData() async {
+    await Get.find<HomeController>().getAllTaskRemote();
+    autoPost();
+  }
+
+  Future<void> autoPost() async {
+    if(isConnected.value && !autoPostExecuted){
+      autoPostExecuted = true;
+      String post = "";
+      final result = await taskUseCase.getAllTaskCacheExecute();
+      print("${result.length} haihai");
+      if (result.isNotEmpty) {
+        for (int i = 0; i < result.length; i++) {
+          print("perulangan ke $i");
+          final element = result[i];
+          final imageUrl =
+              await taskUseCase.insertImageRemoteExecute(element.photo);
+          element.photo = imageUrl;
+          post = await taskUseCase.insertTaskRemoteExecute(element);
+        }
+      }
+
+      if (post != "") showCustomSnackbar("Success", post, Colors.green, false);
+      await taskUseCase.deleteTaskCacheExecute();
+      await getAllTaskRemote();
+    }
+  }
+
+  Future<void> loadData() async {
+    if (isConnected.value) {
+      await getAllTaskRemote();
+    } else {
+      await getAllTask();
+    }
+  }
+
   FutureOr<void> getAllTaskRemote() async {
     List<Map<String, dynamic>> result =
         await taskUseCase.getAllTaskRemoteExecute();
-    print(result);
 
     listTaskRemote(result);
     listTaskRemote.refresh();
@@ -66,7 +106,6 @@ class HomeController extends GetxController {
           photo: taskData['photo'],
           date: taskData['date'],
           address: taskData['address']);
-      print(taskData['id']);
       await insertTask(task);
     }
   }

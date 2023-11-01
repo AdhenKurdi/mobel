@@ -16,4 +16,15 @@ class TaskUseCase {
 
   Future<String> insertTaskRemoteExecute(Task task) =>
       taskRepository.insertTaskRemote(task);
+
+  Future<String> insertTaskCacheExecute(Task task) =>
+      taskRepository.insertTaskCache(task);
+
+  Future<void> deleteTaskCacheExecute() => taskRepository.deleteTaskCache();
+
+  Future<List<Task>> getAllTaskCacheExecute() =>
+      taskRepository.getAllTaskCache();
+
+  Future<String> insertImageRemoteExecute(String pathImage) =>
+      taskRepository.insertImageRemote(pathImage);
 }
